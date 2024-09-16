@@ -1,102 +1,90 @@
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:koyo/context/navigation_context.dart';
+import 'package:koyo/ui/view/add_view.dart';
+import 'package:koyo/ui/view/calendar_view.dart';
+import 'package:koyo/ui/view/home_view.dart';
+import 'package:koyo/ui/view/lists_view.dart';
+import 'package:provider/provider.dart';
+
+const backGroundColor = Color.fromARGB(255, 42, 42, 42);
+const colorBox = Color.fromARGB(255, 60, 60, 67);
 
 void main() {
-  runApp(
-    const MaterialApp(
-      title: 'Koyo',
-      home: HomePage(),
-    ),
-  );
+  initializeDateFormatting().then((_) => runApp(
+        ChangeNotifierProvider(
+          create: (_) =>
+              NavigationContext(), // Fournit NavigationProvider à tout l'arbre de widgets
+          child: const MainView(),
+        ),
+      ));
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class MainView extends StatelessWidget {
+  const MainView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold is a layout for
-    // the major Material Components.
-    return Scaffold(
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: backGroundColor,
         appBar: AppBar(
-          title: const Text('Koyo'),
+          title: const Text("Koyo"),
+          backgroundColor: backGroundColor,
+          elevation: 0,
         ),
-        // body is the majority of the screen.
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              Container(
-                  padding: const EdgeInsets.all(25.0),
-                  width: double.infinity,
-                  height: MediaQuery.of(context).size.height / 7,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25),
-                      color: Colors.grey),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        "Prix de vos abonnement / mois",
-                        style: TextStyle(color: Colors.white, fontSize: 15),
-                      ),
-                      Text(
-                        "500€",
-                        style: TextStyle(color: Colors.white, fontSize: 50),
-                      ),
-                    ],
-                  )),
-              Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height / 2.5,
-                padding: const EdgeInsets.all(25.0),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
-                    color: Colors.grey),
-                child: const Text(
-                  "Liste de vous abonnements",
-                  style: TextStyle(color: Colors.white, fontSize: 15),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Container(
-                    width: MediaQuery.of(context).size.width / 1.8,
-                    height: MediaQuery.of(context).size.height / 5,
-                    padding: const EdgeInsets.all(25.0),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        color: Colors.grey),
-                    child: const Text(
-                      "GeeksForGeeks",
-                      style: TextStyle(color: Colors.white, fontSize: 15),
+        body: Consumer<NavigationContext>(
+          builder: (context, navigationContext, _) {
+            return [
+              const HomeView(),
+              const CalendarView(),
+              const AddView(),
+              const ListsView(),
+            ][navigationContext.selectedIndex];
+          },
+        ),
+        bottomNavigationBar: Container(
+          color: const Color.fromARGB(255, 32, 32, 32),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+            child: Consumer<NavigationContext>(
+              builder: (context, navigationContext, _) {
+                return GNav(
+                  backgroundColor: const Color.fromARGB(255, 32, 32, 32),
+                  color: Colors.white,
+                  activeColor: Colors.white,
+                  tabBackgroundColor: const Color.fromARGB(100, 60, 60, 67),
+                  gap: 8,
+                  padding: const EdgeInsets.all(16),
+                  selectedIndex: navigationContext.selectedIndex,
+                  onTabChange: (index) {
+                    navigationContext.setSelectedIndex(index);
+                  },
+                  tabs: const [
+                    GButton(
+                      icon: Icons.dashboard_rounded,
+                      text: 'Accueil',
                     ),
-                  ),
-                  Container(
-                      width: MediaQuery.of(context).size.width / 3.5,
-                      height: MediaQuery.of(context).size.height / 5,
-                      padding: const EdgeInsets.all(25.0),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(25),
-                          color: Colors.grey),
-                      child: const Column(
-                        children: <Widget>[
-                          Icon(
-                            Icons.add_circle_outline,
-                            color: Colors.white,
-                          ),
-                          Text(
-                            "Ajouter un abonnement",
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      )),
-                ],
-              )
-            ],
+                    GButton(
+                      icon: Icons.calendar_month,
+                      text: 'Agenda',
+                    ),
+                    GButton(
+                      icon: Icons.add_circle,
+                      text: 'Ajouter',
+                    ),
+                    GButton(
+                      icon: Icons.list,
+                      text: 'Liste',
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
